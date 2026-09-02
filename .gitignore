@@ -1,0 +1,9 @@
+
+# Downloaded inputs and generated build/output files
+/input/
+/output/
+/stream-output/
+/url-output*/
+*.jar
+*.class
+__pycache__/
