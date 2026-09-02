@@ -63,9 +63,47 @@ Counts depend on the downloaded versions of the Wikipedia pages.
 
 ## Dataproc timing comparison
 
-Pending: run URLCount with one master and two workers, then with
-one master and four workers. Record the actual elapsed times and
-compare the results using the same input data.
+URLCount was executed through SSH on the Dataproc master node.
+Both measured configurations used one e2-standard-2 master,
+e2-standard-2 workers, and 100 GB boot disks in us-central1-a.
+The same two Wikipedia input files in HDFS and the same Python
+mapper and reducer were used for both runs. The reducer count
+was explicitly fixed at one.
+
+| Workers | Elapsed time (seconds) | Output records |
+| --- | ---: | ---: |
+| 2 | 67.396 | 10 |
+| 4 | 59.509 | 10 |
+
+Elapsed time is the Bash time command's real value for the complete
+Hadoop Streaming submission, including submission and scheduling
+overhead. Cluster creation, scaling, and file transfers were excluded.
+
+The four-worker run took 7.887 seconds less, an approximately 11.7%
+reduction in elapsed time, or a 1.13x speedup. Doubling the worker
+count did not halve the runtime. Both jobs launched 10 map tasks
+and one reduce task. Additional workers can execute more map tasks
+concurrently, but job startup, scheduling, shuffle, and the single
+reducer limit the benefit for this small input.
+
+Each configuration was measured once. These results demonstrate
+the observed runtimes, rather than a statistically established
+performance improvement. Cache state, data locality, and scheduling
+variation may also affect the comparison.
+
+Both jobs completed successfully and produced 10 output records.
+A diff comparison confirmed that the two output files were identical.
+
+Saved evidence:
+- results/dataproc-2workers-100gb.log
+- results/dataproc-4workers-100gb.log
+- results/dataproc-2workers-100gb-output.txt
+- results/dataproc-4workers-100gb-output.txt
+
+An earlier run with default disk sizes took 65.744 seconds.
+It is excluded from this comparison because expansion encountered
+a disk quota limit. The cluster was recreated with 100 GB disks,
+and both worker configurations were then measured with that setup.
 
 ## Resources and assistance
 
